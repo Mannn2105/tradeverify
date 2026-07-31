@@ -1,4 +1,3 @@
-import Stamp from "./Stamp";
 import VerifiedCounter from "./VerifiedCounter";
 import LedgerTable from "./LedgerTable";
 

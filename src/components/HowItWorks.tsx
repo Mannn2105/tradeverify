@@ -68,7 +68,7 @@ export default function HowItWorks() {
 
         <Reveal delay={200}>
           <p className="mt-12 border-l-4 border-mustard-500 pl-4 font-mono text-[11px] uppercase tracking-[0.16em] text-paper/60">
-            Three steps, one stamp. No exceptions, no "trust us" — the record
+            Three steps, one stamp. No exceptions, no &ldquo;trust us&rdquo; — the record
             does the talking.
           </p>
         </Reveal>

@@ -5,6 +5,7 @@ import { useState } from "react";
 export default function CtaForm() {
   const [sent, setSent] = useState(false);
   const [email, setEmail] = useState("");
+  const [refNumber, setRefNumber] = useState("");
 
   if (sent) {
     return (
@@ -26,7 +27,7 @@ export default function CtaForm() {
             Application received — on the record.
           </p>
           <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-ink-3">
-            Ref #TV-{Math.floor(10000 + Math.random() * 89999)} · we&apos;ll
+            Ref #TV-{refNumber} · we&apos;ll
             call within one business day
           </p>
         </div>
@@ -38,7 +39,10 @@ export default function CtaForm() {
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        if (email.trim()) setSent(true);
+        if (email.trim()) {
+          setRefNumber(String(Math.floor(10000 + Math.random() * 89999)));
+          setSent(true);
+        }
       }}
       className="flex flex-col gap-3 sm:flex-row sm:items-stretch"
     >

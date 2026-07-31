@@ -40,7 +40,7 @@ export default function VerificationSection() {
           <div>
             <Reveal>
               <p className="font-mono text-xs font-bold uppercase tracking-[0.22em] text-rust-600">
-                What "verified" actually means
+                What &ldquo;verified&rdquo; actually means
               </p>
               <h2 className="mt-3 font-slab text-3xl font-bold leading-tight tracking-tight text-ink sm:text-4xl">
                 Verification is the whole product.
@@ -95,7 +95,7 @@ export default function VerificationSection() {
                 <div className="absolute -left-4 -top-4 h-full w-full border-2 border-forest-700/40" />
                 <div className="relative rotate-2 border-2 border-ink bg-paper-2 p-8 shadow-[10px_10px_0_0_rgba(38,80,52,0.55)]">
                   <Stamp
-                    className="absolute -right-8 -top-9 h-24 w-24 text-rust-600"
+                    className="absolute -top-7 right-1 h-20 w-20 text-rust-600 sm:right-auto sm:-right-8 sm:-top-9 sm:h-24 sm:w-24"
                     label="APPROVED"
                     delay={600}
                   />

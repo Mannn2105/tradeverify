@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Archivo, IBM_Plex_Mono, Zilla_Slab } from "next/font/google";
 import "./globals.css";
 
@@ -31,6 +31,10 @@ export const metadata: Metadata = {
       "The municipal register of trusted local trades. License-verified pros, one boring, reliable record at a time.",
     type: "website",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0d1f16",
 };
 
 export default function RootLayout({

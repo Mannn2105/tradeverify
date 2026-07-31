@@ -8,7 +8,13 @@ export default function CTASection() {
       id="cta"
       className="texture-hero relative scroll-mt-32 overflow-hidden border-b border-ink/15 bg-paper"
     >
-      <div className="mx-auto max-w-4xl px-4 py-24 text-center sm:px-6 lg:px-8 lg:py-32">
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-6 select-none whitespace-nowrap font-slab text-[20vw] font-bold leading-none text-forest-700/[0.06] lg:text-[16rem]"
+      >
+        ON THE BOOKS
+      </span>
+      <div className="relative mx-auto max-w-4xl px-4 py-24 text-center sm:px-6 lg:px-8 lg:py-32">
         <Reveal>
           <p className="font-mono text-xs font-bold uppercase tracking-[0.22em] text-rust-600">
             Application — 15 minutes, free

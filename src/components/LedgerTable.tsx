@@ -92,9 +92,12 @@ export default function LedgerTable() {
           </table>
         </div>
 
-        <div className="flex items-center justify-between border-t-2 border-ink bg-forest-50/60 px-4 py-2">
+        <div className="flex items-center justify-between gap-3 border-t-2 border-ink bg-forest-50/60 px-4 py-2">
           <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-3">
             Updated continuously · 0.4s refresh
+          </p>
+          <p className="hidden font-mono text-[10px] uppercase tracking-[0.16em] text-ink-3 sm:block">
+            Jobs booked today · 214
           </p>
           <a
             href="#register"

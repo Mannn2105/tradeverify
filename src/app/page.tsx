@@ -5,6 +5,7 @@ import HowItWorks from "@/components/HowItWorks";
 import VerificationSection from "@/components/VerificationSection";
 import SplitSection from "@/components/SplitSection";
 import StatsBand from "@/components/StatsBand";
+import FaqSection from "@/components/FaqSection";
 import CTASection from "@/components/CTASection";
 import Footer from "@/components/Footer";
 
@@ -12,13 +13,14 @@ export default function Home() {
   return (
     <>
       <Header />
-      <main>
+      <main id="main">
         <TrustTicker />
         <Hero />
         <HowItWorks />
         <VerificationSection />
         <SplitSection />
         <StatsBand />
+        <FaqSection />
         <CTASection />
       </main>
       <Footer />

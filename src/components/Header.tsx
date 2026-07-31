@@ -5,6 +5,7 @@ const links = [
   { href: "#verification", label: "Verification" },
   { href: "#register", label: "The register" },
   { href: "#for-pros", label: "For pros" },
+  { href: "#faq", label: "FAQ" },
 ];
 
 export default function Header() {

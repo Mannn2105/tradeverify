@@ -43,7 +43,30 @@ export default function RootLayout({
       lang="en"
       className={`${zillaSlab.variable} ${archivo.variable} ${ibmPlexMono.variable} scroll-smooth`}
     >
-      <body className="font-sans antialiased">{children}</body>
+      <body className="font-sans antialiased">
+        <a
+          href="#main"
+          className="sr-only z-[100] rounded-sm bg-mustard-500 px-4 py-2 font-mono text-xs font-bold uppercase tracking-[0.14em] text-ink focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
+        >
+          Skip to content
+        </a>
+        {children}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: "On the Books",
+              alternateName: "On the Books Municipal Registry",
+              description:
+                "Free scheduling software for local trade pros in exchange for verification, connecting verified tradespeople with customers.",
+              url: "https://onthebooks.co",
+              foundingDate: "2019",
+            }),
+          }}
+        />
+      </body>
     </html>
   );
 }

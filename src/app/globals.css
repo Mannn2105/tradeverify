@@ -1,26 +1,202 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --font-slab: var(--font-zilla-slab), "Roboto Slab", ui-serif, Georgia, serif;
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, -apple-system,
+    sans-serif;
+  --font-mono: var(--font-ibm-plex-mono), ui-monospace, "Courier New",
+    monospace;
+
+  --color-paper: #f3eee1;
+  --color-paper-2: #ece4d0;
+  --color-paper-line: #d8cdb2;
+
+  --color-ink: #221e17;
+  --color-ink-2: #4b4437;
+  --color-ink-3: #7c7463;
+
+  --color-forest-950: #0d1f16;
+  --color-forest-900: #142c1f;
+  --color-forest-800: #1b3b29;
+  --color-forest-700: #265034;
+  --color-forest-600: #326844;
+  --color-forest-500: #418157;
+  --color-forest-400: #5f9c73;
+  --color-forest-300: #8db79c;
+  --color-forest-200: #bdd3c2;
+  --color-forest-100: #dce8dd;
+  --color-forest-50: #eef3ed;
+
+  --color-rust-700: #8a3412;
+  --color-rust-600: #a44516;
+  --color-rust-500: #c25a1e;
+  --color-rust-400: #d97c3f;
+  --color-rust-100: #f0dcc8;
+  --color-rust-50: #f8ede2;
+
+  --color-mustard-700: #a9760a;
+  --color-mustard-600: #c98e0c;
+  --color-mustard-500: #e5a90e;
+  --color-mustard-400: #eec33f;
+  --color-mustard-100: #f7e8bd;
+  --color-mustard-50: #fbf3dd;
+
+  --color-vest-700: #c23f08;
+  --color-vest-600: #de4d0a;
+  --color-vest-500: #f45a12;
+  --color-vest-100: #fce3d3;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ---------------------------------------------------------- */
+/* Background textures — blueprint grid + inspection halftone   */
+/* ---------------------------------------------------------- */
+
+.texture-dots-paper {
+  background-image: radial-gradient(
+    rgba(34, 30, 23, 0.06) 1.1px,
+    transparent 1.1px
+  );
+  background-size: 19px 19px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+.texture-dots-dark {
+  background-image: radial-gradient(
+    rgba(255, 255, 255, 0.055) 1.1px,
+    transparent 1.1px
+  );
+  background-size: 19px 19px;
+}
+
+.texture-blueprint {
+  background-image: linear-gradient(
+      rgba(34, 30, 23, 0.045) 1px,
+      transparent 1px
+    ),
+    linear-gradient(90deg, rgba(34, 30, 23, 0.045) 1px, transparent 1px);
+  background-size: 80px 80px;
+}
+
+.texture-hero {
+  background-image: radial-gradient(rgba(164, 69, 22, 0.085) 1.3px, transparent
+      1.3px),
+    linear-gradient(rgba(34, 30, 23, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34, 30, 23, 0.035) 1px, transparent 1px);
+  background-size: 21px 21px, 96px 96px, 96px 96px;
+}
+
+/* ---------------------------------------------------------- */
+/* The one orchestrated motion: stamps hitting paper            */
+/* ---------------------------------------------------------- */
+
+@keyframes stamp {
+  0% {
+    opacity: 0;
+    transform: scale(2.7) rotate(-16deg);
+  }
+  45% {
+    opacity: 1;
+    transform: scale(0.88) rotate(4deg);
+  }
+  62% {
+    transform: scale(1.06) rotate(-2deg);
+  }
+  78% {
+    transform: scale(0.98) rotate(1deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
   }
 }
+.animate-stamp {
+  animation: stamp 0.68s cubic-bezier(0.2, 0.8, 0.3, 1.12) both;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-up {
+  animation: fade-up 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.marquee-track {
+  animation: marquee 48s linear infinite;
+  width: max-content;
+}
+.marquee:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+}
+.animate-blink {
+  animation: blink 1.6s ease-in-out infinite;
+}
+
+@keyframes tick-flash {
+  0% {
+    background-color: var(--color-mustard-400);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+.animate-tick-flash {
+  animation: tick-flash 0.9s ease-out both;
+}
+
+/* ---------------------------------------------------------- */
+/* Base                                                         */
+/* ---------------------------------------------------------- */
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background-color: var(--color-mustard-500);
+  color: var(--color-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-vest-600);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .marquee-track {
+    animation: none;
+  }
 }

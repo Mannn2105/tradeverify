@@ -2,8 +2,12 @@ import Stamp from "./Stamp";
 import { verifiedPros } from "@/lib/pros";
 
 export default function TrustTicker() {
-  const row = (key: string) => (
-    <div key={key} className="flex shrink-0 items-stretch">
+  const row = (key: string, ariaHidden = false) => (
+    <div
+      key={key}
+      className="flex shrink-0 items-stretch"
+      aria-hidden={ariaHidden || undefined}
+    >
       {verifiedPros.map((p) => (
         <div
           key={`${key}-${p.license}`}
@@ -36,19 +40,33 @@ export default function TrustTicker() {
   );
 
   return (
-    <div className="marquee relative overflow-hidden border-b border-ink/20 bg-paper-2/80">
+    <section
+      className="marquee relative overflow-hidden border-b border-ink/20 bg-paper-2/80"
+      aria-label="Recently verified trade businesses"
+    >
       <div className="flex items-stretch">
         <div className="relative z-10 flex shrink-0 items-center gap-2 border-r border-forest-950/40 bg-forest-800 px-4 py-3 text-paper sm:px-6">
-          <span className="h-2 w-2 animate-blink rounded-full bg-mustard-400" />
+          <span
+            className="h-2 w-2 animate-blink rounded-full bg-mustard-400"
+            aria-hidden="true"
+          />
           <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em]">
             Just verified
           </span>
         </div>
-        <div className="marquee-track flex items-stretch">
+        <div
+          className="marquee-track flex items-stretch"
+          style={{
+            maskImage:
+              "linear-gradient(90deg, transparent, black 32px, black calc(100% - 48px), transparent)",
+            WebkitMaskImage:
+              "linear-gradient(90deg, transparent, black 32px, black calc(100% - 48px), transparent)",
+          }}
+        >
           {row("a")}
-          {row("b")}
+          {row("b", true)}
         </div>
       </div>
-    </div>
+    </section>
   );
 }

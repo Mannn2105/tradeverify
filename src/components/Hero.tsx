@@ -8,7 +8,7 @@ export default function Hero() {
       className="texture-hero relative scroll-mt-32 overflow-hidden border-b border-ink/15 bg-paper"
     >
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
-        <div className="mb-10 flex flex-wrap items-center justify-between gap-3 border border-ink/25 bg-paper-2/60 px-4 py-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-ink-3">
+        <div className="relative mb-10 flex flex-wrap items-center justify-between gap-3 border border-ink/25 bg-paper-2/60 px-4 py-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-ink-3">
           <span>
             Register — active entries ·{" "}
             <span className="text-rust-600">re-certified daily</span>
@@ -19,7 +19,25 @@ export default function Hero() {
           </span>
         </div>
 
-        <div className="grid items-start gap-14 lg:grid-cols-[1fr_1.05fr] lg:gap-16">
+        <div className="relative">
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute -left-2 -top-2 h-4 w-4 border-l-2 border-t-2 border-forest-700"
+          />
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute -right-2 -top-2 h-4 w-4 border-r-2 border-t-2 border-forest-700"
+          />
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute -bottom-2 -left-2 h-4 w-4 border-b-2 border-l-2 border-forest-700"
+          />
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute -bottom-2 -right-2 h-4 w-4 border-b-2 border-r-2 border-forest-700"
+          />
+
+          <div className="grid items-start gap-14 lg:grid-cols-[1fr_1.05fr] lg:gap-16">
           <div className="animate-fade-up">
             <p className="font-mono text-xs font-bold uppercase tracking-[0.22em] text-rust-600">
               Municipal registry for local trades
@@ -88,6 +106,7 @@ export default function Hero() {
 
           <div className="animate-fade-up" style={{ animationDelay: "180ms" }}>
             <LedgerTable />
+          </div>
           </div>
         </div>
       </div>

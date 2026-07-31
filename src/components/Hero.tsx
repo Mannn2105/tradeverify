@@ -1,5 +1,6 @@
 import VerifiedCounter from "./VerifiedCounter";
 import LedgerTable from "./LedgerTable";
+import RegisterSearch from "./RegisterSearch";
 
 export default function Hero() {
   return (
@@ -94,6 +95,8 @@ export default function Hero() {
                 How verification works
               </a>
             </div>
+
+            <RegisterSearch />
 
             <VerifiedCounter />
 

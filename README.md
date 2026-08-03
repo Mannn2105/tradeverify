@@ -33,7 +33,7 @@ src/
   lib/            # db connection, auth (jose), password (bcrypt), validators, response helpers
   models/         # User, Provider, Verification, Service, Availability, Booking, Review
   app/api/        # route handlers (auth, providers, admin, services, availability, search, bookings, reviews)
-scripts/seed.ts   # populates a demo admin + verified provider + service + customer
+scripts/create-admin.ts  # promote an existing user to admin (real input via env)
 ```
 
 ## Setup
@@ -41,7 +41,7 @@ scripts/seed.ts   # populates a demo admin + verified provider + service + custo
 ```bash
 npm install
 cp .env.example .env.local   # fill in MONGODB_URI and JWT_SECRET
-npm run seed                  # one admin + one verified provider + service
+npm run create-admin          # promote/create the first admin (uses ADMIN_EMAIL + ADMIN_PASSWORD)
 npm run dev                   # http://localhost:3000
 ```
 
@@ -50,9 +50,8 @@ npm run dev                   # http://localhost:3000
   string and replace `<password>`.
 - `JWT_SECRET`: generate one with `openssl rand -base64 48`.
 
-Seed prints demo credentials:
-`admin@localpro.dev / AdminPass123!`, `provider@localpro.dev / ProviderPass123!`,
-`customer@localpro.dev / CustomerPass123!`.
+There is no seeded/demo data — all accounts, provider profiles, services,
+bookings, and reviews come from real usage through the API.
 
 ## API reference
 
@@ -114,8 +113,6 @@ Enforcement is in the data layer, not just the UI:
    add `MONGODB_URI`, `JWT_SECRET`, and `AUTH_COOKIE_NAME` (use a fresh `JWT_SECRET`,
    different from local dev).
 4. Deploy. Vercel builds with `npm run build` automatically.
-5. Seed demo records against production if desired — run `npm run seed` locally
-   with `MONGODB_URI` pointed at the prod cluster.
 
 ## What's intentionally NOT included yet
 

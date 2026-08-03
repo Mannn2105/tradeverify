@@ -39,7 +39,7 @@ const ProviderSchema = new Schema<IProvider>(
       },
       coordinates: { type: [Number], required: true },
     },
-    radiusKm: { type: Number, required: true, default: 25 },
+    radiusKm: { type: Number, required: true },
     verificationStatus: {
       type: String,
       enum: ['unverified', 'pending', 'verified', 'rejected'],

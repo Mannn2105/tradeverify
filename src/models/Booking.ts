@@ -76,7 +76,8 @@ const BookingSchema = new Schema<IBooking>(
 // The route sets (booking as any)._transitionBy before save() so the audit
 // trail records who performed the transition. It is not a schema path and is
 // dropped by Mongoose's strict mode, so it is never persisted.
-BookingSchema.pre('save', function (next) {
+// Mongoose 9 pre-save middleware has no `next` callback — throw to abort.
+BookingSchema.pre('save', function () {
   if (this.isModified('status')) {
     const previous =
       this.statusHistory && this.statusHistory.length > 0
@@ -86,8 +87,9 @@ BookingSchema.pre('save', function (next) {
     if (previous !== this.status) {
       const allowed = ALLOWED_TRANSITIONS[previous] ?? [];
       if (!allowed.includes(this.status)) {
-        return next(
-          new HttpError(`Cannot transition booking from '${previous}' to '${this.status}'`, 422)
+        throw new HttpError(
+          `Cannot transition booking from '${previous}' to '${this.status}'`,
+          422
         );
       }
       this.statusHistory.push({
@@ -97,7 +99,6 @@ BookingSchema.pre('save', function (next) {
       });
     }
   }
-  next();
 });
 
 BookingSchema.index({ providerId: 1, status: 1, requestedDate: 1 });

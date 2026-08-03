@@ -16,7 +16,7 @@ export default function Hero() {
           </span>
           <span className="flex items-center gap-2">
             <span className="h-1.5 w-1.5 animate-blink rounded-full bg-forest-600" />
-            Last audit: 04:00 EST · 0 findings
+            Re-certified daily against county files
           </span>
         </div>
 

@@ -1,25 +1,47 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Stamp from "./Stamp";
-import { verifiedPros } from "@/lib/pros";
+
+type ProviderSummary = {
+  _id: string;
+  businessName: string;
+  trade: string;
+};
 
 export default function RegisterSearch() {
   const [query, setQuery] = useState("");
   const [submitted, setSubmitted] = useState<string | null>(null);
+  const [providers, setProviders] = useState<ProviderSummary[]>([]);
+  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/providers?verificationStatus=verified")
+      .then((res) => res.json())
+      .then((body) => {
+        if (cancelled) return;
+        if (body.success) setProviders(body.data ?? []);
+        else setStatus("error");
+        setStatus("ready");
+      })
+      .catch(() => {
+        if (!cancelled) setStatus("error");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const matches = useMemo(() => {
     const q = (query || "").trim().toLowerCase();
     if (!q) return [];
-    return verifiedPros.filter(
+    return providers.filter(
       (p) =>
-        p.business.toLowerCase().includes(q) ||
-        p.license.toLowerCase().includes(q) ||
-        p.trade.toLowerCase().includes(q) ||
-        p.pro.toLowerCase().includes(q) ||
-        p.city.toLowerCase().includes(q)
+        p.businessName.toLowerCase().includes(q) ||
+        p.trade.toLowerCase().includes(q)
     );
-  }, [query]);
+  }, [providers, query]);
 
   const result = submitted ? matches : null;
 
@@ -41,7 +63,7 @@ export default function RegisterSearch() {
             setQuery(e.target.value);
             setSubmitted(null);
           }}
-          placeholder="Pro name, license #, or trade…"
+          placeholder="Pro name or trade…"
           aria-label="Search the register"
           className="w-full min-w-0 flex-1 bg-transparent px-4 py-3 font-mono text-sm text-ink placeholder:text-ink-3 focus:outline-none"
         />
@@ -55,26 +77,36 @@ export default function RegisterSearch() {
 
       {submitted && (
         <div className="border-t border-ink/15 px-4 py-3">
-          {result && result.length > 0 ? (
+          {status === "loading" ? (
+            <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-ink-3">
+              Loading the register…
+            </p>
+          ) : status === "error" ? (
+            <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-ink-3">
+              Could not load the register.
+            </p>
+          ) : result && result.length > 0 ? (
             <div className="flex flex-wrap items-center gap-4">
               <Stamp className="h-12 w-12 shrink-0 text-rust-600" />
               <div className="min-w-0 flex-1">
                 <p className="truncate font-slab font-semibold text-ink">
-                  {result[0].business}
+                  {result[0].businessName}
                 </p>
                 <p className="font-mono text-[11px] uppercase tracking-wider text-ink-3">
-                  {result[0].trade} · {result[0].city} · license{" "}
-                  {result[0].license}
+                  {result[0].trade}
                 </p>
               </div>
               <span className="rounded-sm border-2 border-rust-600 bg-rust-50 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-rust-600">
                 Verified
               </span>
             </div>
+          ) : providers.length === 0 ? (
+            <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-ink-3">
+              No verified businesses on the register yet.
+            </p>
           ) : (
             <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-ink-3">
-              No match in this register — try a trade, a town, or a license
-              number.
+              No match in this register — try a trade or a business name.
             </p>
           )}
         </div>

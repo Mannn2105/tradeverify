@@ -68,8 +68,8 @@ export default function FaqSection() {
 
         <Reveal delay={200}>
           <p className="mt-8 text-center font-mono text-[11px] uppercase tracking-[0.16em] text-ink-3">
-            Something else? Call the registry at (614) 555-0187 — a human
-            answers.
+            Something else? Email the registry at registry@onthebooks.co — a
+            human answers.
           </p>
         </Reveal>
       </div>

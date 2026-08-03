@@ -39,8 +39,7 @@ export default function CTASection() {
             <CtaForm />
           </div>
           <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.16em] text-ink-3">
-            Prefer the phone? Call the registry: (614) 555-0187 · Mon–Fri
-            8:00–5:00 EST
+            Prefer email? registry@onthebooks.co · Mon–Fri 8:00–5:00 EST
           </p>
         </Reveal>
 

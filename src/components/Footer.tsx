@@ -39,7 +39,7 @@ export default function Footer() {
               matters: proof.
             </p>
             <p className="mt-6 font-mono text-[11px] uppercase tracking-[0.18em] text-paper/40">
-              Registry no. TV-00012418 · est. 2019
+              Verified registry · re-certified daily
             </p>
           </div>
 
@@ -69,9 +69,7 @@ export default function Footer() {
             </h3>
             <ul className="mt-4 space-y-2.5 font-mono text-sm text-paper/70">
               <li>registry@onthebooks.co</li>
-              <li>(614) 555-0187</li>
               <li>Mon–Fri 8:00–5:00 EST</li>
-              <li>Front desk: 218 Market St, 3rd floor</li>
             </ul>
           </div>
         </div>

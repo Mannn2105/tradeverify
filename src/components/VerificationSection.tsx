@@ -112,10 +112,10 @@ export default function VerificationSection() {
                   </p>
                   <div className="mt-6 border-t border-ink/15 pt-4">
                     <p className="font-mono text-[11px] uppercase tracking-wider text-ink-3">
-                      Registry no. TV-00012418 · Issued 07/2026
+                      Certificate of standing · current on this register
                     </p>
                     <p className="mt-1 font-mono text-[11px] uppercase tracking-wider text-ink-3">
-                      Re-verification due: 07/2027
+                      Re-verified every 12 months — no exceptions
                     </p>
                   </div>
                 </div>

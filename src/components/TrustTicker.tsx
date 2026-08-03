@@ -1,25 +1,30 @@
 import Stamp from "./Stamp";
-import { verifiedPros } from "@/lib/pros";
+import { getVerifiedProviders } from "@/lib/data";
 
-export default function TrustTicker() {
+export default async function TrustTicker() {
+  const providers = await getVerifiedProviders(16);
+
   const row = (key: string, ariaHidden = false) => (
     <div
       key={key}
       className="flex shrink-0 items-stretch"
       aria-hidden={ariaHidden || undefined}
     >
-      {verifiedPros.map((p) => (
+      {(providers.length === 0
+        ? [{ businessName: "No verified businesses yet", trade: "Register open" }]
+        : providers
+      ).map((p) => (
         <div
-          key={`${key}-${p.license}`}
+          key={`${key}-${p.businessName}`}
           className="flex items-center gap-3 border-r border-ink/15 px-6 py-3"
         >
           <Stamp className="h-9 w-9 shrink-0 text-rust-600" />
           <div className="leading-tight">
             <p className="font-slab text-sm font-semibold text-ink">
-              {p.business}
+              {p.businessName}
             </p>
             <p className="font-mono text-[11px] uppercase tracking-wider text-ink-3">
-              {p.trade} · {p.city}
+              {p.trade}
             </p>
           </div>
           <div className="ml-3 flex shrink-0 items-center gap-1.5 rounded-sm bg-mustard-500 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-widest text-ink">
@@ -42,7 +47,7 @@ export default function TrustTicker() {
   return (
     <section
       className="marquee relative overflow-hidden border-b border-ink/20 bg-paper-2/80"
-      aria-label="Recently verified trade businesses"
+      aria-label="Verified trade businesses"
     >
       <div className="flex items-stretch">
         <div className="relative z-10 flex shrink-0 items-center gap-2 border-r border-forest-950/40 bg-forest-800 px-4 py-3 text-paper sm:px-6">
@@ -51,7 +56,7 @@ export default function TrustTicker() {
             aria-hidden="true"
           />
           <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em]">
-            Just verified
+            On the register
           </span>
         </div>
         <div

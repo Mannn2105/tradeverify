@@ -4,6 +4,7 @@ import { connectDB } from '@/lib/db';
 import Provider from '@/models/Provider';
 import Service from '@/models/Service';
 import Booking from '@/models/Booking';
+import { bookingIntervalsOverlap } from '@/lib/booking-conflicts';
 import { bookingCreateSchema } from '@/lib/validators';
 import { requireRole, requireSession } from '@/lib/auth';
 import { handleRoute, created, ok, fail } from '@/lib/apiResponse';
@@ -52,20 +53,15 @@ export async function POST(req: NextRequest) {
       requestedDate: { $lte: new Date(requestedEnd) },
     }).select('requestedDate durationMinutes');
 
-    const hasConflict = existingBookings.some((existing) => {
-      const existingStart = existing.requestedDate.getTime();
-      const existingEnd =
-        existingStart + (existing.durationMinutes ?? 0) * 60_000;
-
-      return (
-        (existingStart === requestedDate.getTime()) ||
-        (existingEnd > requestedDate.getTime() && existingStart < requestedEnd) ||
-        (durationMinutes === undefined &&
-          existing.durationMinutes !== undefined &&
-          requestedDate.getTime() >= existingStart &&
-          requestedDate.getTime() < existingEnd)
-      );
-    });
+    const hasConflict = existingBookings.some((existing) =>
+      bookingIntervalsOverlap(
+        { requestedDate, durationMinutes },
+        {
+          requestedDate: existing.requestedDate,
+          durationMinutes: existing.durationMinutes,
+        }
+      )
+    );
 
     if (hasConflict) {
       return fail('This provider already has a booking that overlaps this time', 409);

@@ -4,10 +4,10 @@ import Provider from '@/models/Provider';
 import { searchSchema } from '@/lib/validators';
 import { handleRoute, ok } from '@/lib/apiResponse';
 
-// This is the actual marketplace: the ONLY endpoint customers use to
-// discover providers, and it hard-filters to verificationStatus: 'verified'.
-// This is what makes "verified" mean something — an unverified or pending
-// provider can use the scheduling tool, but is invisible here.
+const PUBLIC_PROVIDER_FIELDS = 'businessName trade bio yearsInBusiness radiusKm rating reviewCount verifiedAt createdAt';
+
+// The public marketplace only returns verified providers. Internal account
+// identifiers and precise service-area coordinates are never serialized.
 export async function GET(req: NextRequest) {
   return handleRoute(async () => {
     await connectDB();
@@ -16,19 +16,22 @@ export async function GET(req: NextRequest) {
 
     const filter: Record<string, unknown> = { verificationStatus: 'verified' };
     if (input.trade) filter.trade = input.trade;
-    if (input.minRating) filter.rating = { $gte: input.minRating };
+    if (input.minRating !== undefined) filter.rating = { $gte: input.minRating };
 
-    // Geo search: only applied if lat/lng were provided.
     if (input.lat !== undefined && input.lng !== undefined) {
       filter.serviceArea = {
         $nearSphere: {
           $geometry: { type: 'Point', coordinates: [input.lng, input.lat] },
-          $maxDistance: input.radiusKm * 1000, // meters
+          $maxDistance: input.radiusKm * 1000,
         },
       };
     }
 
-    const providers = await Provider.find(filter).limit(50);
+    const providers = await Provider.find(filter)
+      .select(PUBLIC_PROVIDER_FIELDS)
+      .limit(50)
+      .lean();
+
     return ok(providers);
   });
 }

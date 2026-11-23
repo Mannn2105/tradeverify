@@ -7,6 +7,12 @@ The platform gives service providers access to scheduling tools after signup. A 
 > Repository: `Mannn2105/tradeverify`  
 > Product focus: trusted local services, provider verification, scheduling, and bookings.
 
+## Live preview
+
+[Open the public landing page](https://tradeverify-lemon.vercel.app/).
+
+The public homepage is deployed and verified. Registry statistics and marketplace data are loaded from MongoDB; if the database is unavailable, the landing page renders with empty registry values rather than failing. Authenticated marketplace workflows still require a valid `MONGODB_URI` and production environment configuration.
+
 ## Project at a glance
 
 - **Frontend and API:** Next.js 16 App Router

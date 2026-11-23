@@ -23,6 +23,7 @@ export interface IBooking {
   providerId: mongoose.Types.ObjectId;
   serviceId: mongoose.Types.ObjectId;
   requestedDate: Date;
+  durationMinutes?: number;
   address: string;
   notes?: string;
   status: BookingStatus;
@@ -50,6 +51,7 @@ const BookingSchema = new Schema<IBooking>(
     providerId: { type: Schema.Types.ObjectId, ref: 'Provider', required: true },
     serviceId: { type: Schema.Types.ObjectId, ref: 'Service', required: true },
     requestedDate: { type: Date, required: true },
+    durationMinutes: { type: Number, min: 5, max: 480 },
     address: { type: String, required: true },
     notes: { type: String },
     status: {

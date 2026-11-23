@@ -38,16 +38,37 @@ export async function POST(req: NextRequest) {
     });
     if (!service) return fail('Service not found for this provider', 404);
 
-    // Prevent two active requests for the same provider at the exact same
-    // requested instant. A provider may still receive bookings at other times.
-    const existingBooking = await Booking.findOne({
-      providerId: provider._id,
-      requestedDate,
-      status: { $in: ['requested', 'confirmed'] },
-    }).select('_id');
+    // Store the service duration on the booking so later service edits do not
+    // silently change the length of an appointment that was already requested.
+    const durationMinutes = service.durationMinutes;
+    const requestedEnd = requestedDate.getTime() + (durationMinutes ?? 0) * 60_000;
 
-    if (existingBooking) {
-      return fail('This provider already has an active booking at that time', 409);
+    // Compare the requested interval with all active bookings that begin
+    // before it ends. Legacy bookings without a duration are treated as
+    // point-in-time reservations for backwards compatibility.
+    const existingBookings = await Booking.find({
+      providerId: provider._id,
+      status: { $in: ['requested', 'confirmed'] },
+      requestedDate: { $lte: new Date(requestedEnd) },
+    }).select('requestedDate durationMinutes');
+
+    const hasConflict = existingBookings.some((existing) => {
+      const existingStart = existing.requestedDate.getTime();
+      const existingEnd =
+        existingStart + (existing.durationMinutes ?? 0) * 60_000;
+
+      return (
+        (existingStart === requestedDate.getTime()) ||
+        (existingEnd > requestedDate.getTime() && existingStart < requestedEnd) ||
+        (durationMinutes === undefined &&
+          existing.durationMinutes !== undefined &&
+          requestedDate.getTime() >= existingStart &&
+          requestedDate.getTime() < existingEnd)
+      );
+    });
+
+    if (hasConflict) {
+      return fail('This provider already has a booking that overlaps this time', 409);
     }
 
     const booking = await Booking.create({
@@ -55,6 +76,7 @@ export async function POST(req: NextRequest) {
       providerId: provider._id,
       serviceId: service._id,
       requestedDate,
+      durationMinutes,
       address: input.address,
       notes: input.notes,
       price: service.priceType === 'fixed' ? service.price : undefined,

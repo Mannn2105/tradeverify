@@ -40,8 +40,28 @@ export async function createSessionToken(payload: SessionPayload): Promise<strin
 
 export async function verifySessionToken(token: string): Promise<SessionPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, getSecretKey());
-    return payload as unknown as SessionPayload;
+    const { payload } = await jwtVerify(token, getSecretKey(), {
+      algorithms: ['HS256'],
+    });
+
+    // A valid signature is not enough: only accept the exact session shape
+    // issued by createSessionToken before route handlers trust its claims.
+    const validRole =
+      payload.role === 'customer' ||
+      payload.role === 'provider' ||
+      payload.role === 'admin';
+    const validUserId =
+      typeof payload.userId === 'string' && /^[a-f0-9]{24}$/i.test(payload.userId);
+    const validEmail =
+      typeof payload.email === 'string' && payload.email.length > 0;
+
+    if (!validRole || !validUserId || !validEmail) return null;
+
+    return {
+      userId: payload.userId,
+      role: payload.role,
+      email: payload.email,
+    };
   } catch {
     return null;
   }

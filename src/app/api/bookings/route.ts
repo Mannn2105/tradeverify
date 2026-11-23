@@ -1,10 +1,13 @@
 import { NextRequest } from 'next/server';
+import mongoose from 'mongoose';
 import { isValidObjectId } from 'mongoose';
 import { connectDB } from '@/lib/db';
 import Provider from '@/models/Provider';
 import Service from '@/models/Service';
 import Booking from '@/models/Booking';
 import { bookingIntervalsOverlap } from '@/lib/booking-conflicts';
+import { lockVerifiedProviderForBooking } from '@/lib/provider-booking-lock';
+import { HttpError } from '@/lib/http-error';
 import { bookingCreateSchema } from '@/lib/validators';
 import { requireRole, requireSession } from '@/lib/auth';
 import { handleRoute, created, ok, fail } from '@/lib/apiResponse';
@@ -26,59 +29,76 @@ export async function POST(req: NextRequest) {
 
     await connectDB();
 
-    const provider = await Provider.findById(input.providerId);
-    if (!provider) return fail('Provider not found', 404);
-    if (provider.verificationStatus !== 'verified') {
-      return fail('This provider is not yet verified and cannot accept marketplace bookings', 403);
-    }
+    // MongoDB transactions require a replica set (MongoDB Atlas supports this).
+    // Updating the provider document inside the transaction serializes booking
+    // attempts for that provider. A concurrent transaction gets a write conflict
+    // and is retried against the newly committed booking state.
+    const dbSession = await mongoose.startSession();
+    let booking: Awaited<ReturnType<typeof Booking.create>>[number] | undefined;
 
-    const service = await Service.findOne({
-      _id: input.serviceId,
-      providerId: provider._id,
-      active: true,
-    });
-    if (!service) return fail('Service not found for this provider', 404);
+    try {
+      await dbSession.withTransaction(async () => {
+        const provider = await lockVerifiedProviderForBooking(input.providerId, dbSession);
 
-    // Store the service duration on the booking so later service edits do not
-    // silently change the length of an appointment that was already requested.
-    const durationMinutes = service.durationMinutes;
-    const requestedEnd = requestedDate.getTime() + (durationMinutes ?? 0) * 60_000;
+        const service = await Service.findOne({
+          _id: input.serviceId,
+          providerId: provider._id,
+          active: true,
+        }).session(dbSession);
+        if (!service) throw new HttpError('Service not found for this provider', 404);
 
-    // Compare the requested interval with all active bookings that begin
-    // before it ends. Legacy bookings without a duration are treated as
-    // point-in-time reservations for backwards compatibility.
-    const existingBookings = await Booking.find({
-      providerId: provider._id,
-      status: { $in: ['requested', 'confirmed'] },
-      requestedDate: { $lte: new Date(requestedEnd) },
-    }).select('requestedDate durationMinutes');
+        // Snapshot duration and price so later service edits do not rewrite an
+        // appointment that has already been requested.
+        const durationMinutes = service.durationMinutes;
+        const requestedEnd = requestedDate.getTime() + (durationMinutes ?? 0) * 60_000;
 
-    const hasConflict = existingBookings.some((existing) =>
-      bookingIntervalsOverlap(
-        { requestedDate, durationMinutes },
-        {
-          requestedDate: existing.requestedDate,
-          durationMinutes: existing.durationMinutes,
+        const existingBookings = await Booking.find({
+          providerId: provider._id,
+          status: { $in: ['requested', 'confirmed'] },
+          requestedDate: { $lte: new Date(requestedEnd) },
+        })
+          .select('requestedDate durationMinutes')
+          .session(dbSession);
+
+        const hasConflict = existingBookings.some((existing) =>
+          bookingIntervalsOverlap(
+            { requestedDate, durationMinutes },
+            {
+              requestedDate: existing.requestedDate,
+              durationMinutes: existing.durationMinutes,
+            }
+          )
+        );
+
+        if (hasConflict) {
+          throw new HttpError('This provider already has a booking that overlaps this time', 409);
         }
-      )
-    );
 
-    if (hasConflict) {
-      return fail('This provider already has a booking that overlaps this time', 409);
+        const [createdBooking] = await Booking.create(
+          [
+            {
+              customerId: session.userId,
+              providerId: provider._id,
+              serviceId: service._id,
+              requestedDate,
+              durationMinutes,
+              address: input.address,
+              notes: input.notes,
+              price: service.priceType === 'fixed' ? service.price : undefined,
+              status: 'requested',
+              source: 'marketplace',
+            },
+          ],
+          { session: dbSession }
+        );
+
+        booking = createdBooking;
+      });
+    } finally {
+      await dbSession.endSession();
     }
 
-    const booking = await Booking.create({
-      customerId: session.userId,
-      providerId: provider._id,
-      serviceId: service._id,
-      requestedDate,
-      durationMinutes,
-      address: input.address,
-      notes: input.notes,
-      price: service.priceType === 'fixed' ? service.price : undefined,
-      status: 'requested',
-      source: 'marketplace',
-    });
+    if (!booking) throw new Error('Booking transaction completed without creating a booking');
 
     return created(booking);
   });

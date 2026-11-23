@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import { isValidObjectId } from 'mongoose';
 import { connectDB } from '@/lib/db';
 import Provider from '@/models/Provider';
 import Service from '@/models/Service';
@@ -22,6 +23,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     await connectDB();
 
     const { id } = await params;
+    if (!isValidObjectId(id)) return fail('Service not found', 404);
     let service;
     try {
       service = await assertOwnership(id, session.userId);
@@ -43,6 +45,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     await connectDB();
 
     const { id } = await params;
+    if (!isValidObjectId(id)) return fail('Service not found', 404);
     let service;
     try {
       service = await assertOwnership(id, session.userId);

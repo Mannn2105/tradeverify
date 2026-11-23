@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import { isValidObjectId } from 'mongoose';
 import { connectDB } from '@/lib/db';
 import Provider from '@/models/Provider';
 import Service from '@/models/Service';
@@ -12,6 +13,15 @@ export async function POST(req: NextRequest) {
   return handleRoute(async () => {
     const session = await requireRole('customer');
     const input = bookingCreateSchema.parse(await req.json());
+
+    if (!isValidObjectId(input.providerId) || !isValidObjectId(input.serviceId)) {
+      return fail('Invalid provider or service', 400);
+    }
+
+    const requestedDate = new Date(input.requestedDate);
+    if (!Number.isFinite(requestedDate.getTime()) || requestedDate.getTime() <= Date.now()) {
+      return fail('Booking date must be in the future', 422);
+    }
 
     await connectDB();
 
@@ -28,11 +38,23 @@ export async function POST(req: NextRequest) {
     });
     if (!service) return fail('Service not found for this provider', 404);
 
+    // Prevent two active requests for the same provider at the exact same
+    // requested instant. A provider may still receive bookings at other times.
+    const existingBooking = await Booking.findOne({
+      providerId: provider._id,
+      requestedDate,
+      status: { $in: ['requested', 'confirmed'] },
+    }).select('_id');
+
+    if (existingBooking) {
+      return fail('This provider already has an active booking at that time', 409);
+    }
+
     const booking = await Booking.create({
       customerId: session.userId,
       providerId: provider._id,
       serviceId: service._id,
-      requestedDate: new Date(input.requestedDate),
+      requestedDate,
       address: input.address,
       notes: input.notes,
       price: service.priceType === 'fixed' ? service.price : undefined,
@@ -44,9 +66,7 @@ export async function POST(req: NextRequest) {
   });
 }
 
-// Returns bookings relevant to the current user: as a customer, their own
-// requests; as a provider, bookings made against their provider profile;
-// as an admin, everything.
+// Returns bookings relevant to the current user.
 export async function GET() {
   return handleRoute(async () => {
     const session = await requireSession();

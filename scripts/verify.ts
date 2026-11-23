@@ -16,6 +16,7 @@ import Booking from '../src/models/Booking';
 import Review from '../src/models/Review';
 import { HttpError } from '../src/lib/http-error';
 import { lockVerifiedProviderForBooking } from '../src/lib/provider-booking-lock';
+import { isWithinWeeklyAvailability } from '../src/lib/weekly-availability';
 
 let pass = 0;
 let fail = 0;
@@ -54,6 +55,45 @@ assert(
 );
 
 
+
+console.log('\\nTimezone-aware weekly availability rules:');
+const chicagoWindow = [{ dayOfWeek: 2, startTime: '09:00', endTime: '12:00' }];
+assert(
+  isWithinWeeklyAvailability(
+    new Date('2026-12-01T16:00:00Z'),
+    60,
+    'America/Chicago',
+    chicagoWindow
+  ),
+  'booking is accepted inside provider local availability'
+);
+assert(
+  !isWithinWeeklyAvailability(
+    new Date('2026-12-01T17:30:00Z'),
+    60,
+    'America/Chicago',
+    chicagoWindow
+  ),
+  'booking extending beyond provider local availability is rejected'
+);
+assert(
+  !isWithinWeeklyAvailability(
+    new Date('2026-12-01T16:00:00Z'),
+    60,
+    'Asia/Kolkata',
+    chicagoWindow
+  ),
+  'weekly availability is evaluated in the provider timezone'
+);
+assert(
+  !isWithinWeeklyAvailability(
+    new Date('2026-12-01T18:00:00Z'),
+    60,
+    'America/Chicago',
+    []
+  ),
+  'provider with no published availability cannot be booked'
+);
 
 function assert(cond: boolean, name: string) {
   if (cond) {

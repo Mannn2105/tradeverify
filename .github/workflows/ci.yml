@@ -28,7 +28,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Dependency security audit (diagnostic)
+      - name: Dependency security audit
         run: |
           npm audit --json > npm-audit-full.json || true
           npm audit --omit=dev --json > npm-audit-production.json || true

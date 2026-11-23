@@ -16,7 +16,40 @@ import Review from '../src/models/Review';
 import { HttpError } from '../src/lib/http-error';
 
 let pass = 0;
-let fail = 0;
+let fail = 0;\n\nimport { bookingIntervalsOverlap } from '../src/lib/booking-conflicts';
+
+const interval = (start: string, durationMinutes?: number) => ({
+  requestedDate: new Date(start),
+  durationMinutes,
+});
+
+console.log('\\nBooking interval conflict rules:');
+assert(
+  bookingIntervalsOverlap(interval('2026-12-01T10:00:00Z', 60), interval('2026-12-01T10:30:00Z', 30)),
+  'overlapping timed bookings are rejected'
+);
+assert(
+  !bookingIntervalsOverlap(interval('2026-12-01T10:00:00Z', 30), interval('2026-12-01T10:30:00Z', 30)),
+  'back-to-back appointments are allowed'
+);
+assert(
+  bookingIntervalsOverlap(interval('2026-12-01T10:15:00Z'), interval('2026-12-01T10:00:00Z', 30)),
+  'legacy point booking inside a timed booking conflicts'
+);
+assert(
+  bookingIntervalsOverlap(interval('2026-12-01T10:00:00Z', 30), interval('2026-12-01T10:15:00Z')),
+  'timed booking containing a legacy point booking conflicts'
+);
+assert(
+  !bookingIntervalsOverlap(interval('2026-12-01T10:30:00Z'), interval('2026-12-01T10:00:00Z', 30)),
+  'legacy point booking at an appointment end is allowed'
+);
+assert(
+  bookingIntervalsOverlap(interval('2026-12-01T10:00:00Z'), interval('2026-12-01T10:00:00Z')),
+  'legacy point bookings at the same instant conflict'
+);
+
+
 
 function assert(cond: boolean, name: string) {
   if (cond) {

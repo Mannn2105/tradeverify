@@ -100,11 +100,13 @@ async function main() {
     providerId: verified._id,
     serviceId: service._id,
     requestedDate: new Date('2026-08-10T12:00:00Z'),
+    durationMinutes: 60,
     address: '123 Main St, Austin TX',
     status: 'requested',
     source: 'marketplace',
   });
   assert(booking.status === 'requested', 'booking starts as requested');
+  assert(booking.durationMinutes === 60, 'booking stores a snapshot of service duration');
 
   booking.status = 'completed';
   let threw = false;

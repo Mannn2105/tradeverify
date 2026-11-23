@@ -38,8 +38,10 @@ The public homepage is deployed and verified. Registry statistics and marketplac
 
 ### Services, availability, and bookings
 - Providers can create and manage services.
-- Providers can publish weekly availability.
-- Customers can search for verified providers and request bookings.
+- Providers can publish weekly availability in their local IANA timezone (defaults to `UTC`).
+- Customers can request bookings only within the provider’s published weekly availability.
+- Booking times are checked in the provider’s timezone, including daylight-saving changes.
+- MongoDB transactions serialize concurrent booking attempts for the same provider.
 - Booking status changes follow defined transitions.
 - Customers can review completed bookings.
 

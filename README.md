@@ -91,7 +91,9 @@ For query parameters, authorization requirements, and request/response details, 
 
 - Node.js version compatible with the installed Next.js release
 - npm
-- MongoDB locally or a MongoDB Atlas database
+- MongoDB running as a replica set (MongoDB Atlas supports this)
+
+The booking API uses MongoDB transactions to serialize concurrent booking requests per provider. A standalone local MongoDB server does not support these transactions; use MongoDB Atlas or configure a local replica set.
 
 ### 2. Install dependencies
 

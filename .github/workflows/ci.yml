@@ -28,6 +28,36 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Dependency security audit (diagnostic)
+        run: |
+          npm audit --json > npm-audit-full.json || true
+          npm audit --omit=dev --json > npm-audit-production.json || true
+          node -e "
+            const fs = require('node:fs');
+            const summarize = (file) => {
+              const report = JSON.parse(fs.readFileSync(file, 'utf8'));
+              return {
+                counts: report.metadata?.vulnerabilities ?? {},
+                packages: Object.entries(report.vulnerabilities ?? {}).map(([name, item]) => ({
+                  name,
+                  severity: item.severity,
+                  direct: item.isDirect,
+                  range: item.range,
+                  fixAvailable: item.fixAvailable,
+                  advisories: item.via.map((entry) => typeof entry === 'string' ? entry : {
+                    title: entry.title,
+                    url: entry.url,
+                    range: entry.range
+                  })
+                }))
+              };
+            };
+            console.log('FULL DEPENDENCY AUDIT');
+            console.log(JSON.stringify(summarize('npm-audit-full.json'), null, 2));
+            console.log('PRODUCTION DEPENDENCY AUDIT');
+            console.log(JSON.stringify(summarize('npm-audit-production.json'), null, 2));
+          "
+
       - name: TypeScript check
         run: npm run typecheck
 

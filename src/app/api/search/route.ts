@@ -4,7 +4,7 @@ import Provider from '@/models/Provider';
 import { searchSchema } from '@/lib/validators';
 import { handleRoute, ok } from '@/lib/apiResponse';
 
-const PUBLIC_PROVIDER_FIELDS = 'businessName trade bio yearsInBusiness radiusKm rating reviewCount verifiedAt createdAt';
+const PUBLIC_PROVIDER_FIELDS = 'businessName trade bio yearsInBusiness radiusKm timeZone rating reviewCount verifiedAt createdAt';
 
 // The public marketplace only returns verified providers. Internal account
 // identifiers and precise service-area coordinates are never serialized.

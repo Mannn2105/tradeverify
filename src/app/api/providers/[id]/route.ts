@@ -1,15 +1,22 @@
 import { NextRequest } from 'next/server';
+import { isValidObjectId } from 'mongoose';
 import { connectDB } from '@/lib/db';
 import Provider from '@/models/Provider';
 import { providerProfileSchema } from '@/lib/validators';
 import { requireSession, AuthError } from '@/lib/auth';
 import { handleRoute, ok, fail } from '@/lib/apiResponse';
 
+const PUBLIC_PROVIDER_FIELDS = 'businessName trade bio yearsInBusiness radiusKm rating reviewCount verifiedAt createdAt';
+
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   return handleRoute(async () => {
     await connectDB();
     const { id } = await params;
-    const provider = await Provider.findById(id);
+    if (!isValidObjectId(id)) return fail('Provider not found', 404);
+
+    const provider = await Provider.findOne({ _id: id, verificationStatus: 'verified' })
+      .select(PUBLIC_PROVIDER_FIELDS)
+      .lean();
     if (!provider) return fail('Provider not found', 404);
     return ok(provider);
   });
@@ -21,6 +28,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     await connectDB();
 
     const { id } = await params;
+    if (!isValidObjectId(id)) return fail('Provider not found', 404);
     const provider = await Provider.findById(id);
     if (!provider) return fail('Provider not found', 404);
 

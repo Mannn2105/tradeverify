@@ -6,9 +6,8 @@ import { verificationSubmitSchema } from '@/lib/validators';
 import { requireSession, AuthError } from '@/lib/auth';
 import { handleRoute, created, fail, ok } from '@/lib/apiResponse';
 
-// Provider submits a verification document (license, insurance, background check).
-// This flips the provider into 'pending' status until an admin reviews it via
-// /api/admin/verifications/[id].
+// Submit a new document. A newer submission supersedes older decisions for
+// the same document type and puts the provider back into the review queue.
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   return handleRoute(async () => {
     const session = await requireSession();
@@ -31,10 +30,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       status: 'pending',
     });
 
-    if (provider.verificationStatus === 'unverified') {
-      provider.verificationStatus = 'pending';
-      await provider.save();
-    }
+    provider.verificationStatus = 'pending';
+    provider.verifiedAt = undefined;
+    await provider.save();
 
     return created(verification);
   });

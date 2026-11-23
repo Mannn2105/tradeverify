@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server';
+import { isValidObjectId } from 'mongoose';
 import { connectDB } from '@/lib/db';
 import Booking from '@/models/Booking';
+import Provider from '@/models/Provider';
 import Review from '@/models/Review';
 import { reviewSchema } from '@/lib/validators';
 import { requireRole, AuthError } from '@/lib/auth';
@@ -10,6 +12,7 @@ export async function POST(req: NextRequest) {
   return handleRoute(async () => {
     const session = await requireRole('customer');
     const input = reviewSchema.parse(await req.json());
+    if (!isValidObjectId(input.bookingId)) return fail('Booking not found', 404);
 
     await connectDB();
 
@@ -33,8 +36,6 @@ export async function POST(req: NextRequest) {
       comment: input.comment,
     });
 
-    // The Review model's post-save hook recalculates the provider's aggregate
-    // rating and review count on this write.
     return created(review);
   });
 }
@@ -44,9 +45,21 @@ export async function GET(req: NextRequest) {
     await connectDB();
     const { searchParams } = new URL(req.url);
     const providerId = searchParams.get('providerId');
-    if (!providerId) return fail('providerId query param is required', 400);
+    if (!providerId || !isValidObjectId(providerId)) {
+      return fail('A valid providerId query param is required', 400);
+    }
 
-    const reviews = await Review.find({ providerId }).sort({ createdAt: -1 });
+    const provider = await Provider.findOne({
+      _id: providerId,
+      verificationStatus: 'verified',
+    }).select('_id');
+    if (!provider) return fail('Provider not found', 404);
+
+    const reviews = await Review.find({ providerId: provider._id })
+      .select('rating comment createdAt')
+      .sort({ createdAt: -1 })
+      .lean();
+
     return ok(reviews);
   });
 }

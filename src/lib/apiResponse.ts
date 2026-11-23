@@ -26,6 +26,16 @@ export async function handleRoute(fn: () => Promise<NextResponse>): Promise<Next
     if (err instanceof ZodError) {
       return fail('Validation failed', 422, err.flatten());
     }
+    // Unique MongoDB indexes are the final guard against concurrent duplicate
+    // writes. Return a conflict instead of exposing these as server errors.
+    if (
+      typeof err === 'object' &&
+      err !== null &&
+      'code' in err &&
+      (err as { code?: unknown }).code === 11000
+    ) {
+      return fail('A record with these details already exists', 409);
+    }
     console.error('Unhandled API error:', err);
     return fail('Internal server error', 500);
   }

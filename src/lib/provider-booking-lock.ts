@@ -16,7 +16,7 @@ export async function lockVerifiedProviderForBooking(
     { _id: providerId, verificationStatus: 'verified' },
     { $inc: { bookingLockVersion: 1 } },
     { new: true, session }
-  );
+  ).select('+bookingLockVersion');
 
   if (provider) return provider;
 

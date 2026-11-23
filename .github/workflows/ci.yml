@@ -52,10 +52,17 @@ jobs:
                 }))
               };
             };
+            const full = summarize('npm-audit-full.json');
+            const production = summarize('npm-audit-production.json');
             console.log('FULL DEPENDENCY AUDIT');
-            console.log(JSON.stringify(summarize('npm-audit-full.json'), null, 2));
+            console.log(JSON.stringify(full, null, 2));
             console.log('PRODUCTION DEPENDENCY AUDIT');
-            console.log(JSON.stringify(summarize('npm-audit-production.json'), null, 2));
+            console.log(JSON.stringify(production, null, 2));
+            const highOrCritical = (counts) => (counts.high ?? 0) + (counts.critical ?? 0);
+            if (highOrCritical(full.counts) > 0 || highOrCritical(production.counts) > 0) {
+              console.error('High or critical dependency vulnerabilities remain.');
+              process.exitCode = 1;
+            }
           "
 
       - name: TypeScript check

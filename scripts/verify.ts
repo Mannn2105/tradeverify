@@ -6,7 +6,8 @@
  *   - provider rating/reviewCount are recalculated on every review write
  *   - one review per booking (unique index backstop)
  */
-import { MongoMemoryServer } from 'mongodb-memory-server';
+import mongoose from 'mongoose';
+import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import { connectDB } from '../src/lib/db';
 import User from '../src/models/User';
 import Provider from '../src/models/Provider';
@@ -14,6 +15,7 @@ import Service from '../src/models/Service';
 import Booking from '../src/models/Booking';
 import Review from '../src/models/Review';
 import { HttpError } from '../src/lib/http-error';
+import { lockVerifiedProviderForBooking } from '../src/lib/provider-booking-lock';
 
 let pass = 0;
 let fail = 0;
@@ -64,7 +66,7 @@ function assert(cond: boolean, name: string) {
 }
 
 async function main() {
-  const mongod = await MongoMemoryServer.create();
+  const mongod = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
   process.env.MONGODB_URI = mongod.getUri();
 
   await connectDB();
@@ -97,6 +99,28 @@ async function main() {
     radiusKm: 40,
     verificationStatus: 'verified',
   });
+  console.log('\\nConcurrent booking transaction lock:');
+  const lockVersions = await Promise.all(
+    [1, 2].map(async () => {
+      const session = await mongoose.startSession();
+      try {
+        return await session.withTransaction(async () => {
+          const lockedProvider = await lockVerifiedProviderForBooking(verified._id, session);
+          // Keep both transactions in flight long enough to exercise write contention.
+          await new Promise((resolve) => setTimeout(resolve, 40));
+          return lockedProvider.bookingLockVersion;
+        });
+      } finally {
+        await session.endSession();
+      }
+    })
+  );
+  const sortedLockVersions = lockVersions.slice().sort((a, b) => a - b);
+  assert(
+    sortedLockVersions[0] === 1 && sortedLockVersions[1] === 2,
+    'concurrent transactions serialize on the provider booking lock'
+  );
+
   await Provider.create({
     userId: unverifiedUser._id,
     businessName: 'Pending Plumber Co.',

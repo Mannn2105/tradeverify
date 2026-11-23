@@ -16,14 +16,16 @@ import Review from '../src/models/Review';
 import { HttpError } from '../src/lib/http-error';
 
 let pass = 0;
-let fail = 0;\n\nimport { bookingIntervalsOverlap } from '../src/lib/booking-conflicts';
+let fail = 0;
+
+import { bookingIntervalsOverlap } from '../src/lib/booking-conflicts';
 
 const interval = (start: string, durationMinutes?: number) => ({
   requestedDate: new Date(start),
   durationMinutes,
 });
 
-console.log('\\nBooking interval conflict rules:');
+console.log('\nBooking interval conflict rules:');
 assert(
   bookingIntervalsOverlap(interval('2026-12-01T10:00:00Z', 60), interval('2026-12-01T10:30:00Z', 30)),
   'overlapping timed bookings are rejected'

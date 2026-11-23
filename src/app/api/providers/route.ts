@@ -5,7 +5,7 @@ import { providerProfileSchema } from '@/lib/validators';
 import { requireRole } from '@/lib/auth';
 import { handleRoute, created, ok, fail } from '@/lib/apiResponse';
 
-const PUBLIC_PROVIDER_FIELDS = 'businessName trade bio yearsInBusiness radiusKm rating reviewCount verifiedAt createdAt';
+const PUBLIC_PROVIDER_FIELDS = 'businessName trade bio yearsInBusiness radiusKm timeZone rating reviewCount verifiedAt createdAt';
 
 // Create a provider profile. Caller must be logged in with role 'provider'.
 export async function POST(req: NextRequest) {
@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
         coordinates: [input.serviceArea.lng, input.serviceArea.lat],
       },
       radiusKm: input.serviceArea.radiusKm,
+      timeZone: input.timeZone ?? 'UTC',
       verificationStatus: 'unverified',
     });
 

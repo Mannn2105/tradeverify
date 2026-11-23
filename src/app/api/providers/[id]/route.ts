@@ -48,6 +48,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
           input.serviceArea.lat !== provider.serviceArea.coordinates[1] ||
           input.serviceArea.radiusKm !== provider.radiusKm));
 
+    // Do not let a provider change the identity/operating area while an
+    // administrator is reviewing documents for the current profile.
+    if (businessIdentityChanged && provider.verificationStatus === 'pending') {
+      return fail('Profile identity cannot be changed while verification is pending. Wait for the review to finish.', 409);
+    }
+
     if (input.businessName !== undefined) provider.businessName = input.businessName;
     if (input.trade !== undefined) provider.trade = input.trade;
     if (input.bio !== undefined) provider.bio = input.bio;

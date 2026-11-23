@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import { isValidObjectId } from 'mongoose';
 import { connectDB } from '@/lib/db';
 import Provider from '@/models/Provider';
 import Booking from '@/models/Booking';
@@ -12,6 +13,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     await connectDB();
 
     const { id } = await params;
+    if (!isValidObjectId(id)) return fail('Booking not found', 404);
     const booking = await Booking.findById(id);
     if (!booking) return fail('Booking not found', 404);
 
@@ -32,6 +34,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     await connectDB();
 
     const { id } = await params;
+    if (!isValidObjectId(id)) return fail('Booking not found', 404);
     const booking = await Booking.findById(id);
     if (!booking) return fail('Booking not found', 404);
 
@@ -45,8 +48,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const { status } = bookingUpdateSchema.parse(await req.json());
 
     // Only the provider (or an admin) can confirm/decline/complete; either
-    // party can cancel. The validity of the transition itself is enforced by
-    // the Booking model's pre-save hook, not just this route.
+    // party can cancel. The model enforces allowed state transitions.
     if (
       (status === 'confirmed' || status === 'declined' || status === 'completed') &&
       !isProvider &&

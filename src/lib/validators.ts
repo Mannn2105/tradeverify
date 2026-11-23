@@ -24,7 +24,17 @@ export const loginSchema = z.object({
   password: z.string().min(1),
 });
 
+const timeZoneSchema = z.string().min(1).max(100).refine((timeZone) => {
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone });
+    return true;
+  } catch {
+    return false;
+  }
+}, 'Invalid IANA timezone');
+
 export const providerProfileSchema = z.object({
+  timeZone: timeZoneSchema.optional(),
   businessName: z.string().min(2).max(150),
   trade: z.enum(TRADES),
   bio: z.string().max(2000).optional(),

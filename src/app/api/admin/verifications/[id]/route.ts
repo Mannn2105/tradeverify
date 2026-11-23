@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import { isValidObjectId } from 'mongoose';
 import { connectDB } from '@/lib/db';
 import Verification from '@/models/Verification';
 import Provider from '@/models/Provider';
@@ -12,6 +13,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     await connectDB();
 
     const { id } = await params;
+    if (!isValidObjectId(id)) return fail('Verification record not found', 404);
     const verification = await Verification.findById(id);
     if (!verification) return fail('Verification record not found', 404);
 

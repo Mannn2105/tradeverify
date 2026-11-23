@@ -112,6 +112,15 @@ export async function POST(req: NextRequest) {
 
         booking = createdBooking;
       });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '';
+      if (/Transaction numbers are only allowed|replica set|mongos/i.test(message)) {
+        throw new HttpError(
+          'Booking is unavailable because the database does not support transactions',
+          503
+        );
+      }
+      throw error;
     } finally {
       await dbSession.endSession();
     }

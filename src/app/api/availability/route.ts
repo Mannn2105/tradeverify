@@ -23,6 +23,19 @@ export async function POST(req: NextRequest) {
       return fail('startTime must be earlier than endTime', 422);
     }
 
+    // Weekly availability windows for the same day must not overlap.
+    // HH:MM uses zero-padded 24-hour strings, so lexical comparison is safe.
+    const overlappingSlot = await Availability.findOne({
+      providerId: provider._id,
+      dayOfWeek: input.dayOfWeek,
+      startTime: { $lt: input.endTime },
+      endTime: { $gt: input.startTime },
+    }).select('_id');
+
+    if (overlappingSlot) {
+      return fail('This availability window overlaps an existing slot', 409);
+    }
+
     const slot = await Availability.create({ ...input, providerId: provider._id });
     return created(slot);
   });

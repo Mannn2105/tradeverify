@@ -6,7 +6,7 @@ import { providerProfileSchema } from '@/lib/validators';
 import { requireSession, AuthError } from '@/lib/auth';
 import { handleRoute, ok, fail } from '@/lib/apiResponse';
 
-const PUBLIC_PROVIDER_FIELDS = 'businessName trade bio yearsInBusiness radiusKm rating reviewCount verifiedAt createdAt';
+const PUBLIC_PROVIDER_FIELDS = 'businessName trade bio yearsInBusiness radiusKm timeZone rating reviewCount verifiedAt createdAt';
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   return handleRoute(async () => {
@@ -57,6 +57,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (input.businessName !== undefined) provider.businessName = input.businessName;
     if (input.trade !== undefined) provider.trade = input.trade;
     if (input.bio !== undefined) provider.bio = input.bio;
+    if (input.timeZone !== undefined) provider.timeZone = input.timeZone;
     if (input.yearsInBusiness !== undefined) provider.yearsInBusiness = input.yearsInBusiness;
     if (input.serviceArea !== undefined) {
       provider.serviceArea = {

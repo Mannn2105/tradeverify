@@ -20,6 +20,8 @@ export interface IProvider {
   verifiedAt?: Date;
   rating: number;
   reviewCount: number;
+  // Incremented inside booking transactions to serialize requests per provider.
+  bookingLockVersion: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -48,6 +50,7 @@ const ProviderSchema = new Schema<IProvider>(
     verifiedAt: { type: Date },
     rating: { type: Number, default: 0 },
     reviewCount: { type: Number, default: 0 },
+    bookingLockVersion: { type: Number, default: 0, select: false },
   },
   { timestamps: true }
 );

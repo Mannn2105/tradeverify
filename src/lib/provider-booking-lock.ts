@@ -15,7 +15,7 @@ export async function lockVerifiedProviderForBooking(
   const provider = await Provider.findOneAndUpdate(
     { _id: providerId, verificationStatus: 'verified' },
     { $inc: { bookingLockVersion: 1 } },
-    { new: true, session }
+    { returnDocument: 'after', session }
   ).select('+bookingLockVersion');
 
   if (provider) return provider;

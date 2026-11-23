@@ -30,16 +30,31 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     const input = providerProfileSchema.partial().parse(await req.json());
 
-    if (input.businessName) provider.businessName = input.businessName;
-    if (input.trade) provider.trade = input.trade;
+    // A verified badge is tied to the business identity and operating area
+    // that were reviewed. Material changes must trigger a fresh review.
+    const businessIdentityChanged =
+      (input.businessName !== undefined && input.businessName !== provider.businessName) ||
+      (input.trade !== undefined && input.trade !== provider.trade) ||
+      (input.serviceArea !== undefined &&
+        (input.serviceArea.lng !== provider.serviceArea.coordinates[0] ||
+          input.serviceArea.lat !== provider.serviceArea.coordinates[1] ||
+          input.serviceArea.radiusKm !== provider.radiusKm));
+
+    if (input.businessName !== undefined) provider.businessName = input.businessName;
+    if (input.trade !== undefined) provider.trade = input.trade;
     if (input.bio !== undefined) provider.bio = input.bio;
     if (input.yearsInBusiness !== undefined) provider.yearsInBusiness = input.yearsInBusiness;
-    if (input.serviceArea) {
+    if (input.serviceArea !== undefined) {
       provider.serviceArea = {
         type: 'Point',
         coordinates: [input.serviceArea.lng, input.serviceArea.lat],
       };
       provider.radiusKm = input.serviceArea.radiusKm;
+    }
+
+    if (businessIdentityChanged && provider.verificationStatus === 'verified') {
+      provider.verificationStatus = 'unverified';
+      provider.verifiedAt = undefined;
     }
 
     await provider.save();

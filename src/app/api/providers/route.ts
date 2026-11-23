@@ -5,9 +5,9 @@ import { providerProfileSchema } from '@/lib/validators';
 import { requireRole } from '@/lib/auth';
 import { handleRoute, created, ok, fail } from '@/lib/apiResponse';
 
+const PUBLIC_PROVIDER_FIELDS = 'businessName trade bio yearsInBusiness radiusKm rating reviewCount verifiedAt createdAt';
+
 // Create a provider profile. Caller must be logged in with role 'provider'.
-// A provider starts as 'unverified' — they won't show up in marketplace
-// search until an admin approves their verification documents.
 export async function POST(req: NextRequest) {
   return handleRoute(async () => {
     const session = await requireRole('provider');
@@ -37,19 +37,23 @@ export async function POST(req: NextRequest) {
   });
 }
 
-// Basic listing (non-geo). For location-based marketplace search, use
-// /api/search instead — this endpoint is mainly for back-office use.
+// Public listing always returns verified profiles. Status is deliberately
+// not user-selectable, and internal account/location fields are excluded.
 export async function GET(req: NextRequest) {
   return handleRoute(async () => {
     await connectDB();
     const { searchParams } = new URL(req.url);
     const trade = searchParams.get('trade');
-    const status = searchParams.get('verificationStatus') || 'verified';
 
-    const filter: Record<string, unknown> = { verificationStatus: status };
+    const filter: Record<string, unknown> = { verificationStatus: 'verified' };
     if (trade) filter.trade = trade;
 
-    const providers = await Provider.find(filter).sort({ rating: -1 }).limit(100);
+    const providers = await Provider.find(filter)
+      .select(PUBLIC_PROVIDER_FIELDS)
+      .sort({ rating: -1 })
+      .limit(100)
+      .lean();
+
     return ok(providers);
   });
 }

@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import { isValidObjectId } from 'mongoose';
 import { connectDB } from '@/lib/db';
 import Provider from '@/models/Provider';
 import Verification from '@/models/Verification';
@@ -14,6 +15,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     await connectDB();
 
     const { id } = await params;
+    if (!isValidObjectId(id)) return fail('Provider not found', 404);
     const provider = await Provider.findById(id);
     if (!provider) return fail('Provider not found', 404);
     if (provider.userId.toString() !== session.userId) {
@@ -45,6 +47,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     await connectDB();
 
     const { id } = await params;
+    if (!isValidObjectId(id)) return fail('Provider not found', 404);
     const provider = await Provider.findById(id);
     if (!provider) return fail('Provider not found', 404);
     if (provider.userId.toString() !== session.userId && session.role !== 'admin') {

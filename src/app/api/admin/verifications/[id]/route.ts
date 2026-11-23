@@ -14,22 +14,29 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     const { id } = await params;
     if (!isValidObjectId(id)) return fail('Verification record not found', 404);
-    const verification = await Verification.findById(id);
-    if (!verification) return fail('Verification record not found', 404);
-
-    // A decision is final for this submission. Providers must upload a new
-    // document to request another review after rejection.
-    if (verification.status !== 'pending') {
-      return fail('This verification submission has already been reviewed', 409);
-    }
-
     const input = verificationReviewSchema.parse(await req.json());
 
-    verification.status = input.status;
-    verification.notes = input.notes ?? verification.notes;
-    verification.reviewedBy = session.userId as unknown as typeof verification.reviewedBy;
-    verification.reviewedAt = new Date();
-    await verification.save();
+    // Compare-and-set makes the review decision atomic: two administrators
+    // cannot both approve/reject the same pending submission concurrently.
+    const update: Record<string, unknown> = {
+      status: input.status,
+      reviewedBy: session.userId,
+      reviewedAt: new Date(),
+    };
+    if (input.notes !== undefined) update.notes = input.notes;
+
+    const verification = await Verification.findOneAndUpdate(
+      { _id: id, status: 'pending' },
+      { $set: update },
+      { new: true, runValidators: true }
+    );
+
+    if (!verification) {
+      const exists = await Verification.exists({ _id: id });
+      return exists
+        ? fail('This verification submission has already been reviewed', 409)
+        : fail('Verification record not found', 404);
+    }
 
     // Only the newest submission for each document type represents its
     // current state. Older rejected records remain as audit history but do

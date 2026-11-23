@@ -15,6 +15,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const verification = await Verification.findById(id);
     if (!verification) return fail('Verification record not found', 404);
 
+    // A decision is final for this submission. Providers must upload a new
+    // document to request another review after rejection.
+    if (verification.status !== 'pending') {
+      return fail('This verification submission has already been reviewed', 409);
+    }
+
     const input = verificationReviewSchema.parse(await req.json());
 
     verification.status = input.status;
@@ -23,24 +29,37 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     verification.reviewedAt = new Date();
     await verification.save();
 
-    // Approving a document promotes the provider to 'verified' — but only if
-    // no other submitted check is currently rejected and blocking them.
-    // Approval is the single path that makes a provider visible in search.
-    if (input.status === 'verified') {
-      const outstandingRejections = await Verification.exists({
-        providerId: verification.providerId,
-        status: 'rejected',
-      });
-      if (!outstandingRejections) {
-        await Provider.findByIdAndUpdate(verification.providerId, {
-          verificationStatus: 'verified',
-          verifiedAt: new Date(),
-        });
+    // Only the newest submission for each document type represents its
+    // current state. Older rejected records remain as audit history but do
+    // not permanently block a provider who has submitted a replacement.
+    const submissions = await Verification.find({ providerId: verification.providerId })
+      .sort({ createdAt: -1, _id: -1 });
+
+    const latestByType = new Map<string, (typeof submissions)[number]>();
+    for (const submission of submissions) {
+      if (!latestByType.has(submission.type)) {
+        latestByType.set(submission.type, submission);
       }
-    } else if (input.status === 'rejected') {
-      await Provider.findByIdAndUpdate(verification.providerId, {
-        verificationStatus: 'rejected',
-      });
+    }
+
+    const latestStatuses = Array.from(latestByType.values()).map((item) => item.status);
+    let nextProviderStatus: 'unverified' | 'pending' | 'verified' | 'rejected';
+
+    if (latestStatuses.includes('pending')) {
+      nextProviderStatus = 'pending';
+    } else if (latestStatuses.includes('rejected')) {
+      nextProviderStatus = 'rejected';
+    } else if (latestStatuses.includes('verified')) {
+      nextProviderStatus = 'verified';
+    } else {
+      nextProviderStatus = 'unverified';
+    }
+
+    const provider = await Provider.findById(verification.providerId);
+    if (provider) {
+      provider.verificationStatus = nextProviderStatus;
+      provider.verifiedAt = nextProviderStatus === 'verified' ? new Date() : undefined;
+      await provider.save();
     }
 
     return ok(verification);

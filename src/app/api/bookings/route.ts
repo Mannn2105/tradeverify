@@ -5,8 +5,10 @@ import { connectDB } from '@/lib/db';
 import Provider from '@/models/Provider';
 import Service from '@/models/Service';
 import Booking from '@/models/Booking';
+import Availability from '@/models/Availability';
 import { bookingIntervalsOverlap } from '@/lib/booking-conflicts';
 import { lockVerifiedProviderForBooking } from '@/lib/provider-booking-lock';
+import { isWithinWeeklyAvailability } from '@/lib/weekly-availability';
 import { HttpError } from '@/lib/http-error';
 import { bookingCreateSchema } from '@/lib/validators';
 import { requireRole, requireSession } from '@/lib/auth';
@@ -51,6 +53,22 @@ export async function POST(req: NextRequest) {
         // appointment that has already been requested.
         const durationMinutes = service.durationMinutes;
         const requestedEnd = requestedDate.getTime() + (durationMinutes ?? 0) * 60_000;
+
+        const weeklyWindows = await Availability.find({ providerId: provider._id })
+          .select('dayOfWeek startTime endTime')
+          .session(dbSession)
+          .lean();
+
+        if (
+          !isWithinWeeklyAvailability(
+            requestedDate,
+            durationMinutes,
+            provider.timeZone ?? 'UTC',
+            weeklyWindows
+          )
+        ) {
+          throw new HttpError('Requested time is outside this provider’s weekly availability', 409);
+        }
 
         const existingBookings = await Booking.find({
           providerId: provider._id,

@@ -14,6 +14,7 @@ export interface IProvider {
     coordinates: [number, number]; // [lng, lat]
   };
   radiusKm: number;
+  timeZone: string;
   // This is the core trust gate: only 'verified' providers are ever
   // returned by the public marketplace search endpoint.
   verificationStatus: 'unverified' | 'pending' | 'verified' | 'rejected';
@@ -42,6 +43,7 @@ const ProviderSchema = new Schema<IProvider>(
       coordinates: { type: [Number], required: true },
     },
     radiusKm: { type: Number, required: true },
+    timeZone: { type: String, required: true, default: 'UTC' },
     verificationStatus: {
       type: String,
       enum: ['unverified', 'pending', 'verified', 'rejected'],

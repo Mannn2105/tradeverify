@@ -30,11 +30,11 @@ export default function ProviderDashboard() {
     const submissionBody = await submissions.json();
     if (!submissions.ok || !submissionBody.success) throw new Error(submissionBody.error || "Could not load document submissions.");
     setRecords(submissionBody.data);
-  }
+  }, []);
 
   useEffect(() => {
     load().catch(err => setError(err instanceof Error ? err.message : "Could not load dashboard.")).finally(() => setLoading(false));
-  }, []);
+  }, [load]);
 
   async function createProfile(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();

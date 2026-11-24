@@ -18,6 +18,7 @@ export default function ProviderDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [profileDraft, setProfileDraft] = useState({ businessName: "", trade: "electrician", bio: "", years: "0", lat: "", lng: "", radius: "25" });
 
   async function load() {
     const response = await fetch("/api/providers/me");
@@ -34,6 +35,33 @@ export default function ProviderDashboard() {
   useEffect(() => {
     load().catch(err => setError(err instanceof Error ? err.message : "Could not load dashboard.")).finally(() => setLoading(false));
   }, []);
+
+  async function createProfile(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaving(true);
+    setError(null);
+    try {
+      const response = await fetch("/api/providers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          businessName: profileDraft.businessName,
+          trade: profileDraft.trade,
+          bio: profileDraft.bio || undefined,
+          yearsInBusiness: Number(profileDraft.years),
+          serviceArea: { lat: Number(profileDraft.lat), lng: Number(profileDraft.lng), radiusKm: Number(profileDraft.radius) },
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+        }),
+      });
+      const body = await response.json();
+      if (!response.ok || !body.success) throw new Error(body.error || "Could not create business profile.");
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not create business profile.");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   async function submitDocument(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();

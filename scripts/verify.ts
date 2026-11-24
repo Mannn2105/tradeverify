@@ -300,6 +300,7 @@ async function main() {
         await provider.save({ session });
         created = record;
       });
+      if (!created) throw new Error('Verification submission completed without creating a record');
       return created;
     } finally {
       await session.endSession();

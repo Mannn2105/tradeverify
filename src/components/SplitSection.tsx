@@ -12,7 +12,7 @@ const cards = [
       "The verification you already have becomes your storefront",
     ],
     cta: "Claim your business",
-    href: "#cta",
+    href: "/register",
     accent: "forest",
   },
   {

@@ -24,8 +24,8 @@ export default function CTASection() {
           </h2>
           <p className="mx-auto mt-5 max-w-xl leading-relaxed text-ink-2">
             No credit card. No trial window. The software is free in exchange
-            for verification — that&apos;s the whole deal. Fill this out and a
-            registry clerk (a human) will walk you through the paperwork.
+            for verification — that&apos;s the whole deal. Create your account, add your
+            business details, and submit documents for review.
           </p>
         </Reveal>
 

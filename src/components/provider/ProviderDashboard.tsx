@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type Provider = { _id: string; businessName: string; trade: string; verificationStatus: string; verifiedAt?: string };
@@ -20,7 +20,7 @@ export default function ProviderDashboard() {
   const [saving, setSaving] = useState(false);
   const [profileDraft, setProfileDraft] = useState({ businessName: "", trade: "electrician", bio: "", years: "0", lat: "", lng: "", radius: "25" });
 
-  async function load() {
+  const load = useCallback(async () => {
     const response = await fetch("/api/providers/me");
     const body = await response.json();
     if (!response.ok || !body.success) throw new Error(body.error || "Could not load provider profile.");

@@ -1,6 +1,6 @@
 import Reveal from "./Reveal";
 import Stamp from "./Stamp";
-import CtaForm from "./CtaForm";
+import Link from "next/link";
 
 export default function CTASection() {
   return (
@@ -24,8 +24,8 @@ export default function CTASection() {
           </h2>
           <p className="mx-auto mt-5 max-w-xl leading-relaxed text-ink-2">
             No credit card. No trial window. The software is free in exchange
-            for verification — that&apos;s the whole deal. Fill this out and a
-            registry clerk (a human) will walk you through the paperwork.
+            for verification — that&apos;s the whole deal. Create your account, add your
+            business details, and submit documents for review.
           </p>
         </Reveal>
 
@@ -36,7 +36,7 @@ export default function CTASection() {
               label="OPEN"
               delay={700}
             />
-            <CtaForm />
+            <Link href="/register" className="inline-flex border-2 border-ink bg-forest-700 px-7 py-3.5 font-mono text-sm font-bold uppercase tracking-[0.14em] text-paper shadow-[5px_5px_0_0_rgba(34,30,23,1)] transition-transform hover:-translate-y-0.5">Start your free application</Link>
           </div>
           <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.16em] text-ink-3">
             Prefer email? registry@onthebooks.co · Mon–Fri 8:00–5:00 EST

@@ -83,7 +83,7 @@ export default function Hero() {
 
             <div className="mt-8 flex flex-wrap items-center gap-4">
               <a
-                href="#cta"
+                href="/register"
                 className="rounded-sm border-2 border-ink bg-mustard-500 px-6 py-3.5 font-mono text-sm font-bold uppercase tracking-[0.14em] text-ink shadow-[5px_5px_0_0_rgba(34,30,23,1)] transition-transform duration-150 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_rgba(34,30,23,1)]"
               >
                 Get listed — free

@@ -12,6 +12,7 @@ const cards = [
       "The verification you already have becomes your storefront",
     ],
     cta: "Claim your business",
+    href: "/register",
     accent: "forest",
   },
   {
@@ -25,6 +26,7 @@ const cards = [
       "Look up the certificate before you pick up the phone",
     ],
     cta: "Search the register",
+    href: "#register",
     accent: "rust",
   },
 ];
@@ -84,7 +86,7 @@ export default function SplitSection() {
                   ))}
                 </ul>
                 <a
-                  href="#cta"
+                  href={card.href}
                   className={`mt-8 inline-flex items-center gap-2 border-2 border-ink px-5 py-3 font-mono text-xs font-bold uppercase tracking-[0.14em] text-ink transition-transform duration-150 hover:-translate-y-0.5 ${
                     card.accent === "forest"
                       ? "bg-forest-700 text-paper"

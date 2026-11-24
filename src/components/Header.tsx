@@ -16,10 +16,19 @@ export default function Header() {
           <span className="truncate text-paper/70">
             Municipal trades registry · est. 2019
           </span>
-          <span className="hidden items-center gap-2 sm:flex">
-            <span className="h-1.5 w-1.5 animate-blink rounded-full bg-mustard-400" />
-            <span>Independent verification · open to audit</span>
-          </span>
+          <div className="flex shrink-0 items-center gap-4">
+            <a
+              href="/provider/login"
+              className="text-mustard-300 transition-colors hover:text-paper"
+              aria-label="Provider sign in"
+            >
+              Provider sign in
+            </a>
+            <span className="hidden items-center gap-2 sm:flex">
+              <span className="h-1.5 w-1.5 animate-blink rounded-full bg-mustard-400" />
+              <span>Independent verification · open to audit</span>
+            </span>
+          </div>
         </div>
       </div>
       <div className="border-b border-ink/15 bg-paper/90 backdrop-blur">
@@ -51,7 +60,7 @@ export default function Header() {
               Customer? Search
             </a>
             <a
-              href="#cta"
+              href="/register"
               className="rounded-sm bg-mustard-500 px-4 py-2 font-mono text-xs font-bold uppercase tracking-[0.12em] text-ink shadow-[3px_3px_0_0_rgba(34,30,23,1)] transition-transform duration-150 hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_rgba(34,30,23,1)]"
             >
               Get listed free

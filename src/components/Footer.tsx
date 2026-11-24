@@ -13,10 +13,19 @@ const columns = [
   {
     title: "Registry",
     links: [
-      { label: "About the registry", href: "#" },
-      { label: "Quarterly audit report", href: "#" },
-      { label: "Privacy of entries", href: "#" },
-      { label: "Careers — we hire paperwork people", href: "#" },
+      { label: "About the registry", href: "#verification" },
+      {
+        label: "Quarterly audit report",
+        href: "mailto:registry@onthebooks.co?subject=Quarterly%20audit%20report%20request",
+      },
+      {
+        label: "Privacy of entries",
+        href: "mailto:registry@onthebooks.co?subject=Privacy%20of%20registry%20entries",
+      },
+      {
+        label: "Careers — we hire paperwork people",
+        href: "mailto:registry@onthebooks.co?subject=Careers%20at%20On%20the%20Books",
+      },
     ],
   },
 ];
@@ -27,7 +36,7 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
           <div>
-            <a href="#" className="flex items-center gap-2.5">
+            <a href="#main" aria-label="On the Books home" className="flex items-center gap-2.5">
               <RegistryMark className="h-10 w-10" />
               <span className="font-slab text-2xl font-bold tracking-tight text-paper">
                 On&nbsp;the&nbsp;Books

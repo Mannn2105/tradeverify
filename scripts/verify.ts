@@ -14,6 +14,7 @@ import Provider from '../src/models/Provider';
 import Service from '../src/models/Service';
 import Booking from '../src/models/Booking';
 import Review from '../src/models/Review';
+import Verification from '../src/models/Verification';
 import { HttpError } from '../src/lib/http-error';
 import { lockVerifiedProviderForBooking } from '../src/lib/provider-booking-lock';
 import { isWithinWeeklyAvailability } from '../src/lib/weekly-availability';
@@ -279,6 +280,87 @@ async function main() {
     dupThrew = true;
   }
   assert(dupThrew, 'duplicate review for a booking is blocked by the unique index');
+
+  console.log('\\nProvider verification lifecycle (transactional data layer):');
+  const submitVerification = async (type: 'license' | 'insurance' | 'background_check') => {
+    const session = await mongoose.startSession();
+    try {
+      let created;
+      await session.withTransaction(async () => {
+        const [record] = await Verification.create([{
+          providerId: verified._id,
+          type,
+          documentUrl: 'https://example.com/verification-document.pdf',
+          status: 'pending',
+        }], { session });
+        const provider = await Provider.findById(verified._id).session(session);
+        if (!provider) throw new Error('Provider disappeared during verification submission');
+        provider.verificationStatus = 'pending';
+        provider.verifiedAt = undefined;
+        await provider.save({ session });
+        created = record;
+      });
+      return created;
+    } finally {
+      await session.endSession();
+    }
+  };
+
+  const reviewVerification = async (recordId: mongoose.Types.ObjectId, status: 'verified' | 'rejected') => {
+    const session = await mongoose.startSession();
+    try {
+      let reviewed = false;
+      await session.withTransaction(async () => {
+        const record = await Verification.findOneAndUpdate(
+          { _id: recordId, status: 'pending' },
+          { $set: { status, reviewedAt: new Date(), reviewedBy: providerUser._id } },
+          { new: true, session }
+        );
+        if (!record) return;
+        const submissions = await Verification.find({ providerId: record.providerId })
+          .sort({ createdAt: -1, _id: -1 }).session(session);
+        const latestByType = new Map<string, (typeof submissions)[number]>();
+        for (const item of submissions) if (!latestByType.has(item.type)) latestByType.set(item.type, item);
+        const statuses = Array.from(latestByType.values()).map((item) => item.status);
+        const nextStatus = statuses.includes('pending') ? 'pending'
+          : statuses.includes('rejected') ? 'rejected'
+          : statuses.includes('verified') ? 'verified' : 'unverified';
+        const provider = await Provider.findById(record.providerId).session(session);
+        if (provider) {
+          provider.verificationStatus = nextStatus;
+          provider.verifiedAt = nextStatus === 'verified' ? new Date() : undefined;
+          await provider.save({ session });
+        }
+        reviewed = true;
+      });
+      return reviewed;
+    } finally {
+      await session.endSession();
+    }
+  };
+
+  const firstSubmission = await submitVerification('license');
+  assert((await Provider.findById(verified._id))?.verificationStatus === 'pending',
+    'new document submission moves provider into pending review');
+  assert(await reviewVerification(firstSubmission._id, 'verified'),
+    'pending verification can be approved once');
+  let verificationProvider = await Provider.findById(verified._id);
+  assert(verificationProvider?.verificationStatus === 'verified' && !!verificationProvider.verifiedAt,
+    'approval updates provider status and verifiedAt together');
+  assert(!(await reviewVerification(firstSubmission._id, 'rejected')),
+    'a previously reviewed submission cannot be reviewed a second time');
+
+  const replacementSubmission = await submitVerification('license');
+  verificationProvider = await Provider.findById(verified._id);
+  assert(verificationProvider?.verificationStatus === 'pending' && !verificationProvider.verifiedAt,
+    'replacement submission clears prior verified state and queues review');
+  assert((await Verification.findById(firstSubmission._id))?.status === 'verified',
+    'replacement submission preserves the prior decision as audit history');
+  assert(await reviewVerification(replacementSubmission._id, 'rejected'),
+    'pending replacement document can be rejected');
+  verificationProvider = await Provider.findById(verified._id);
+  assert(verificationProvider?.verificationStatus === 'rejected' && !verificationProvider.verifiedAt,
+    'rejection of the latest document updates provider aggregate status');
 
   await mongod.stop();
 

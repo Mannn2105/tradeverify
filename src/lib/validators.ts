@@ -40,8 +40,8 @@ export const providerProfileSchema = z.object({
   bio: z.string().max(2000).optional(),
   yearsInBusiness: z.number().int().min(0).max(100).optional(),
   serviceArea: z.object({
-    lng: z.number(),
-    lat: z.number(),
+    lng: z.number().min(-180).max(180),
+    lat: z.number().min(-90).max(90),
     radiusKm: z.number().min(1).max(200),
   }),
 });

@@ -33,6 +33,8 @@ export default function ProviderDashboard() {
   }, []);
 
   useEffect(() => {
+    // Loading remote provider data is an intentional effect.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     load().catch(err => setError(err instanceof Error ? err.message : "Could not load dashboard.")).finally(() => setLoading(false));
   }, [load]);
 

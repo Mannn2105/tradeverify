@@ -53,7 +53,7 @@ export default function ProviderOnboardingForm() {
   const field = (key: keyof typeof values, label: string, type = "text", required = true) => (
     <label className="block" key={key}>
       <span className="font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-ink-2">{label}</span>
-      <input type={type} step={key === "years" ? "1" : type === "number" ? "any" : undefined} min={key === "years" ? "0" : key === "radius" ? "1" : key === "lat" ? "-90" : key === "lng" ? "-180" : undefined} max={key === "years" ? "100" : key === "radius" ? "200" : key === "lat" ? "90" : key === "lng" ? "180" : undefined} value={values[key]} onChange={e => change(key, e.target.value)} className="mt-1 w-full border-2 border-ink bg-paper px-3 py-2 text-sm text-ink focus:border-forest-600 focus:outline-none" />
+      <input type={type} required={required} step={key === "years" ? "1" : type === "number" ? "any" : undefined} min={key === "years" ? "0" : key === "radius" ? "1" : key === "lat" ? "-90" : key === "lng" ? "-180" : undefined} max={key === "years" ? "100" : key === "radius" ? "200" : key === "lat" ? "90" : key === "lng" ? "180" : undefined} value={values[key]} onChange={e => change(key, e.target.value)} className="mt-1 w-full border-2 border-ink bg-paper px-3 py-2 text-sm text-ink focus:border-forest-600 focus:outline-none" />
     </label>
   );
 

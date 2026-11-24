@@ -5,6 +5,7 @@ import Provider from '@/models/Provider';
 import Verification from '@/models/Verification';
 import { verificationSubmitSchema } from '@/lib/validators';
 import { requireSession, AuthError } from '@/lib/auth';
+import { HttpError } from '@/lib/http-error';
 import { handleRoute, created, fail, ok } from '@/lib/apiResponse';
 
 // Submit a new document. The record creation and provider status change are
@@ -24,7 +25,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     try {
       await dbSession.withTransaction(async () => {
         const provider = await Provider.findById(id).session(dbSession);
-        if (!provider) throw new Error('Provider not found');
+        if (!provider) throw new HttpError('Provider not found', 404);
         if (provider.userId.toString() !== session.userId) {
           throw new AuthError('You can only submit verification for your own profile', 403);
         }

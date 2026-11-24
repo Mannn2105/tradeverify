@@ -3,54 +3,62 @@
 import { useState } from "react";
 
 export default function CtaForm() {
-  const [sent, setSent] = useState(false);
   const [email, setEmail] = useState("");
-  const [refNumber, setRefNumber] = useState("");
+  const [draftOpened, setDraftOpened] = useState(false);
 
-  if (sent) {
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const address = email.trim();
+    if (!address) return;
+
+    const subject = "Trade registry application";
+    const body = [
+      "Hello On the Books team,",
+      "",
+      "I'd like to apply to be listed in the trade registry.",
+      `Work email: ${address}`,
+      "",
+      "Please let me know the next steps.",
+    ].join("\n");
+
+    const mailto = `mailto:registry@onthebooks.co?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailto;
+    setDraftOpened(true);
+  }
+
+  if (draftOpened) {
     return (
-      <div className="inline-flex items-center gap-4 border-2 border-forest-700 bg-paper px-5 py-4">
-        <span className="animate-stamp inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-forest-700 text-forest-700">
-          <svg
-            viewBox="0 0 24 24"
-            className="h-5 w-5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="3"
-            strokeLinecap="square"
-          >
-            <path d="M5 13 l4 4 L19 7" />
-          </svg>
-        </span>
-        <div className="text-left">
-          <p className="font-slab text-lg font-bold text-ink">
-            Application received — on the record.
-          </p>
-          <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-ink-3">
-            Ref #TV-{refNumber} · we&apos;ll
-            call within one business day
-          </p>
-        </div>
+      <div
+        role="status"
+        className="border-2 border-forest-700 bg-paper px-5 py-4 text-left"
+      >
+        <p className="font-slab text-lg font-bold text-ink">
+          Your application email is ready.
+        </p>
+        <p className="mt-1 max-w-md font-mono text-[11px] uppercase leading-relaxed tracking-[0.12em] text-ink-3">
+          Send the draft from your email app to complete your request. If it
+          did not open, email registry@onthebooks.co.
+        </p>
+        <a
+          href="mailto:registry@onthebooks.co?subject=Trade%20registry%20application"
+          className="mt-3 inline-block font-mono text-xs font-bold uppercase tracking-[0.12em] text-forest-700 underline underline-offset-4"
+        >
+          Open email again
+        </a>
       </div>
     );
   }
 
   return (
     <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (email.trim()) {
-          setRefNumber(String(Math.floor(10000 + Math.random() * 89999)));
-          setSent(true);
-        }
-      }}
+      onSubmit={handleSubmit}
       className="flex flex-col gap-3 sm:flex-row sm:items-stretch"
     >
       <input
         type="email"
         required
         value={email}
-        onChange={(e) => setEmail(e.target.value)}
+        onChange={(event) => setEmail(event.target.value)}
         placeholder="you@yourbusiness.com"
         aria-label="Work email"
         className="w-full border-2 border-ink bg-paper px-4 py-3.5 font-mono text-sm text-ink placeholder:text-ink-3 focus:border-forest-600 focus:outline-none sm:w-80"

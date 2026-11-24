@@ -109,9 +109,18 @@ export default function ProviderDashboard() {
 
       {!provider ? (
         <section className="mt-8 border-2 border-ink bg-paper p-5">
-          <h2 className="font-slab text-xl font-bold text-ink">Business profile not found</h2>
-          <p className="mt-2 text-sm text-ink-2">Your provider account exists, but its business profile has not been completed.</p>
-          <p className="mt-2 text-sm text-ink-2">Please contact registry support to complete profile setup before submitting documents.</p>
+          <h2 className="font-slab text-xl font-bold text-ink">Complete your business profile</h2>
+          <p className="mt-2 text-sm text-ink-2">Your provider account is active, but the business profile is missing. Complete these details to continue.</p>
+          <form onSubmit={createProfile} className="mt-5 grid gap-4 sm:grid-cols-2">
+            <label className="block sm:col-span-2"><span className="font-mono text-[11px] font-bold uppercase tracking-wider text-ink-2">Business name</span><input required minLength={2} maxLength={150} value={profileDraft.businessName} onChange={e => setProfileDraft(v => ({ ...v, businessName: e.target.value }))} className="mt-1 w-full border-2 border-ink bg-paper px-3 py-2 text-sm text-ink" /></label>
+            <label className="block"><span className="font-mono text-[11px] font-bold uppercase tracking-wider text-ink-2">Trade</span><select value={profileDraft.trade} onChange={e => setProfileDraft(v => ({ ...v, trade: e.target.value }))} className="mt-1 w-full border-2 border-ink bg-paper px-3 py-2 text-sm text-ink">{["electrician","plumber","hvac","mobile_groomer","handyman","landscaper","cleaner","other"].map(item => <option key={item} value={item}>{item.replaceAll("_", " ")}</option>)}</select></label>
+            <label className="block"><span className="font-mono text-[11px] font-bold uppercase tracking-wider text-ink-2">Years in business</span><input type="number" min="0" max="100" step="1" value={profileDraft.years} onChange={e => setProfileDraft(v => ({ ...v, years: e.target.value }))} className="mt-1 w-full border-2 border-ink bg-paper px-3 py-2 text-sm text-ink" /></label>
+            <label className="block"><span className="font-mono text-[11px] font-bold uppercase tracking-wider text-ink-2">Latitude</span><input type="number" step="any" min="-90" max="90" required value={profileDraft.lat} onChange={e => setProfileDraft(v => ({ ...v, lat: e.target.value }))} className="mt-1 w-full border-2 border-ink bg-paper px-3 py-2 text-sm text-ink" /></label>
+            <label className="block"><span className="font-mono text-[11px] font-bold uppercase tracking-wider text-ink-2">Longitude</span><input type="number" step="any" min="-180" max="180" required value={profileDraft.lng} onChange={e => setProfileDraft(v => ({ ...v, lng: e.target.value }))} className="mt-1 w-full border-2 border-ink bg-paper px-3 py-2 text-sm text-ink" /></label>
+            <label className="block"><span className="font-mono text-[11px] font-bold uppercase tracking-wider text-ink-2">Service radius (km)</span><input type="number" min="1" max="200" required value={profileDraft.radius} onChange={e => setProfileDraft(v => ({ ...v, radius: e.target.value }))} className="mt-1 w-full border-2 border-ink bg-paper px-3 py-2 text-sm text-ink" /></label>
+            <label className="block sm:col-span-2"><span className="font-mono text-[11px] font-bold uppercase tracking-wider text-ink-2">Description</span><textarea rows={3} value={profileDraft.bio} onChange={e => setProfileDraft(v => ({ ...v, bio: e.target.value }))} className="mt-1 w-full border-2 border-ink bg-paper px-3 py-2 text-sm text-ink" /></label>
+            <button disabled={saving} className="border-2 border-ink bg-forest-700 px-5 py-3 font-mono text-xs font-bold uppercase tracking-wider text-paper disabled:opacity-60">{saving ? "Saving…" : "Create business profile"}</button>
+          </form>
         </section>
       ) : (
         <>

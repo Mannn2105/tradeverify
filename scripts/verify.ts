@@ -285,8 +285,7 @@ async function main() {
   const submitVerification = async (type: 'license' | 'insurance' | 'background_check') => {
     const session = await mongoose.startSession();
     try {
-      let created;
-      await session.withTransaction(async () => {
+      const created = await session.withTransaction(async () => {
         const [record] = await Verification.create([{
           providerId: verified._id,
           type,
@@ -298,7 +297,7 @@ async function main() {
         provider.verificationStatus = 'pending';
         provider.verifiedAt = undefined;
         await provider.save({ session });
-        created = record;
+        return record;
       });
       if (!created) throw new Error('Verification submission completed without creating a record');
       return created;
